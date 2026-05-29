@@ -9,8 +9,6 @@ import lombok.Setter;
 @Getter @Setter
 public class NewPostRequest {
 	@NotNull
-	private Long authorId;
-	@NotNull
 	private Long threadId;
 	@NotBlank
 	@Size(min = 5, max = 150)

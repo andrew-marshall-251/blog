@@ -5,6 +5,7 @@ import com.andrew.blog.dtos.NewPostRequest;
 import com.andrew.blog.services.PostServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -20,8 +21,8 @@ public class PostController {
 	}
 
 	@PostMapping("/")
-	public ResponseEntity<NewPostResponse> addNewPost(@Valid @RequestBody NewPostRequest request) {
-		NewPostResponse response = postService.addNewPost(request);
+	public ResponseEntity<NewPostResponse> addNewPost(@Valid @RequestBody NewPostRequest request, Authentication auth) {
+		NewPostResponse response = postService.addNewPost(request, auth);
 		URI location = URI.create("/api/posts/" + response.getPostId());
 		return ResponseEntity.created(location).body(response);
 	}

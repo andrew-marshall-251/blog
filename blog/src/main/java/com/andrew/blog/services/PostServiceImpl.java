@@ -9,6 +9,7 @@ import com.andrew.blog.entities.Thread;
 import com.andrew.blog.repositories.PostRepository;
 import com.andrew.blog.repositories.ThreadRepository;
 import com.andrew.blog.repositories.UserRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,17 +30,19 @@ public class PostServiceImpl {
 		int len = postTitle.length();
 		return postTitle.substring(0, Math.min(5, len));
 	}
-	public NewPostResponse addNewPost(NewPostRequest request) {
-		Post newPost = new Post();
-		NewPostResponse response = new NewPostResponse();
-
-		Long authorId = request.getAuthorId();
+	public NewPostResponse addNewPost(
+			NewPostRequest request,
+			Authentication auth) {
+		// User
+		String username = auth.getName();
+		User author = userRepository.findByUsername(username)
+				.orElseThrow(() -> new RuntimeException("User not found: " + username));
+		// Thread
 		Long threadId = request.getThreadId();
-		User author = userRepository.findById(authorId)
-				.orElseThrow(() -> new RuntimeException("User with id: " + authorId + " not found!"));
 		Thread thread = threadRepository.findById(threadId)
-				.orElseThrow(() -> new RuntimeException("Thread with id: " + authorId + " not found!"));
-
+				.orElseThrow(() -> new RuntimeException("Thread with id: " + threadId + " not found!"));
+		// create post
+		Post newPost = new Post();
 		newPost.setAuthor(author);
 		newPost.setThread(thread);
 		newPost.setPostTitle(request.getPostTitle());
@@ -47,9 +50,9 @@ public class PostServiceImpl {
 		newPost.setStatus(Status.PUBLISHED);
 		newPost.setSlug(makeSlug(request.getPostTitle()));
 		newPost.setContent(request.getPostContent());
-
 		postRepository.save(newPost);
-
+		// create response
+		NewPostResponse response = new NewPostResponse();
 		response.setPostId(newPost.getId());
 		return response;
 	}
