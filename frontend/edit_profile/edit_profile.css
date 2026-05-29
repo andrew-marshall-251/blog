@@ -1,0 +1,10 @@
+.mb {
+	margin-bottom: 20px;
+}
+
+#edit-profile-form-flex {
+	max-width: 800px;
+	width: 90%;
+	display: flex;
+	flex-direction: column;
+}
