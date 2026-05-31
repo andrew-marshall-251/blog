@@ -3,8 +3,11 @@ package com.andrew.blog.controllers;
 import com.andrew.blog.dtos.*;
 import com.andrew.blog.services.MeService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api")
@@ -25,6 +28,13 @@ public class MeController {
 	public UserPostsResponse getMyPosts(Authentication auth) {
 		UserPostsResponse response = meService.getMyPosts(auth);
 		return response;
+	}
+
+	@PostMapping("/posts/me")
+	public ResponseEntity<NewPostResponse> addNewPost(@Valid @RequestBody NewPostRequest request, Authentication auth) {
+		NewPostResponse response = meService.addNewPost(request, auth);
+		URI location = URI.create("/api/posts/" + response.getPostId());
+		return ResponseEntity.created(location).body(response);
 	}
 
 	@PatchMapping("/users/me/password")

@@ -7,11 +7,14 @@ import com.andrew.blog.dtos.RegisterResponse;
 import com.andrew.blog.entities.User;
 import com.andrew.blog.repositories.UserRepository;
 import io.jsonwebtoken.Jwts;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -39,6 +42,12 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public RegisterResponse registerUser(RegisterRequest request) {
+		if (userRepository.existsByUsernameOrEmail(
+				request.getUsername(), request.getEmail())) {
+			throw new ResponseStatusException(
+					HttpStatus.CONFLICT,
+					"User already exists");
+		}
 		User user = new User();
 		user.setBio(request.getBio());
 		user.setEmail(request.getEmail());
@@ -47,7 +56,6 @@ public class AuthServiceImpl implements AuthService {
 		user.setMascot(request.getMascot());
 		List<String> roles = new ArrayList<String>();
 		roles.add("ROLE_USER");
-		roles.add("ROLE_ADMIN");
 		user.setRoles(roles);
 		userRepository.save(user);
 
@@ -68,16 +76,17 @@ public class AuthServiceImpl implements AuthService {
 						request.getPassword());
 		authenticationManager.authenticate(authRequest);
 
-		// User user = userRepository.findByUsername(request.getUsername());
-		List<String> roles = new ArrayList<String>();
-		roles.add("ROLE_USER");
-		roles.add("ROLE_ADMIN");
+		User user = userRepository.findByUsernameOrEmail(
+				 request.getUsernameOrEmail(),
+				 request.getUsernameOrEmail())
+				 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + request.getUsernameOrEmail()));
+		List<String> roles = user.getRoles();
 
 		Instant now = Instant.now();
 		Instant exp = now.plusSeconds(1000);
 
 		String accessToken = Jwts.builder()
-				.subject(authRequest.getName())
+				.subject(user.getUsername())
 				.claim("roles", roles)
 				.issuedAt(Date.from(now))
 				.expiration(Date.from(exp))
@@ -88,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
 		response.setAccessToken(accessToken);
 		response.setTokenType("Bearer");
 		response.setExpiresIn(1000);
-		response.setUsername(authRequest.getName());
+		response.setUsername(user.getUsername());
 		response.setRoles(roles);
 		return response;
 	}

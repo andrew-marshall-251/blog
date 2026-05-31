@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -41,6 +42,7 @@ public class SecurityConfig {
 						.requestMatchers("/", "/error", "/public/**", "/api/threads").permitAll()
 						.requestMatchers("/api/auth/register").permitAll()
 						.requestMatchers("/api/auth/login").permitAll()
+						.requestMatchers("/api/posts").permitAll()
 						.requestMatchers("/api/users/**").hasRole("USER")
 						.requestMatchers("/api/posts/**").hasRole("USER")
 						.requestMatchers("/api/admin").hasRole("ADMIN")

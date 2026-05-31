@@ -1,0 +1,29 @@
+=== Me ===
+
+GET /api/users/me - done
+GET /api/posts/me - done
+PATCH /api/users/me - done
+PATCH /api/users/me/password - done
++POST /api/posts/me - almost done+
+
+=== Auth ===
+
+POST /api/auth/register - done
+POST /api/login - done
+
+=== Posts ===
+
+GET /api/posts/{post_id} - built in
+GET /api/posts/{post_id}/comments - need to build
+POST /api/posts/{post_id}/comments - need to build
+PATCH /api/posts/{post_id}/comments/{comment_id} - need to build
+DELETE /api/posts/{post_id}/comments{comment_id} - need to build
+
+create_post
+edit_profile
+login
+logout
+my_profile
+new_password
+register
+view_threads
