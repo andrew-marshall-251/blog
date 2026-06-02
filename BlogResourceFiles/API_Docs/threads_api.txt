@@ -1,0 +1,217 @@
+======================================
+GET /api/threads
+======================================
+
+Get all the threads in the platform.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+[
+	{
+		"threadId": 2,
+		"threadName": "Coding",
+		"postCount": 67
+	},
+	{
+		"threadId": 3,
+		"threadName": "Swimming",
+		"postCount": 67
+	}
+]
+
+ERRORS:
+N/A
+
+======================================
+POST /api/threads
+======================================
+
+Create a thread in the platform. ADMIN-ONLY
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"threadName": "Gaming"
+}
+
+RESPONSE:
+201 Created
+{
+	"threadId": 5,
+	"threadName": "Gaming",
+	"postCount": 0
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "threadName",
+			"message": "Thread name is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to create threads."
+}
+
+======================================
+PATCH /api/threads/{thread_id}
+======================================
+
+Rename a thread in the platform. ADMIN-ONLY
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"threadName": "Not Just Gaming"
+}
+
+RESPONSE:
+200 OK
+{
+	"threadId": 8,
+	"threadName": "Not Just Gaming",
+	"postCount": 0
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "threadName",
+			"message": "Thread name is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to update threads."
+}
+
+404 Not Found
+{
+	"code": "THREAD_DOES_NOT_EXIST",
+	"message": "Thread #{thread_id} does not exist."
+}
+
+======================================
+DELETE /api/threads/{thread_id}
+======================================
+
+Delete a thread in the platform.
+NOTE, comments and posts are also deleted
+through thread deletion. ADMIN-ONLY
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+204 No Content
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to delete threads."
+}
+
+404 Not Found
+{
+	"code": "THREAD_DOES_NOT_EXIST",
+	"message": "Thread #{thread_id} does not exist."
+}
+
+======================================
+GET /api/threads/{thread_id}
+======================================
+
+Get a specific thread.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+{
+	"threadId": 5,
+	"threadName": "Gaming",
+	"postCount": 0
+}
+
+ERRORS:
+404 Not Found
+{
+	"code": "THREAD_DOES_NOT_EXIST",
+	"message": "Thread #{thread_id} does not exist."
+}
+
+======================================
+GET /api/threads/{thread_id}/posts
+======================================
+
+Get all the posts in thread #{thread_id}. Only
+sends post excerpts.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+[
+	{
+		"authorId": 2,
+		"authorName": "andMarsh",
+		"postId": 4,
+		"postTitle": "How to Swim",
+		"postExcerpt": "Lorem esse omnis neque veniam magnam Nobis iste error quaerat officia aliquid possimus Unde totam quia dolores cumque...",
+		"slug": "how-to-swim",
+		"threadId": 3,
+		"threadName": "Swimming",
+		"createdAt": "2026-05-01T23:24:00Z",
+		"lastUpdatedAt": "2026-05-01T23:24:00Z",
+		"publishedAt": "2026-05-01T23:24:00Z",
+		"status": "PUBLISHED"
+	}
+]
+
+ERRORS:
+404 Not Found
+{
+	"code": "THREAD_DOES_NOT_EXIST",
+	"message": "Thread #{thread_id} does not exist."
+}

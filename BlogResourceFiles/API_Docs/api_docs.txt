@@ -1,0 +1,40 @@
+=== USERS/AUTH ===
+POST /api/auth/login
+POST /api/users
+GET /api/users/{user_id}
+DELETE /api/users/me
+DELETE /api/users/{user_id}
+
+=== ME ===
+GET /api/users/me
+PATCH /api/users/me
+PATCH /api/users/me/password
+GET /api/users/me/posts
+
+=== POSTS ===
+GET /api/posts
+POST /api/posts
+GET /api/posts/{post_id}
+GET /api/users/{user_id}/posts
+PATCH /api/posts/{post_id}
+DELETE /api/posts/{post_id}
+
+=== COMMENTS ===
+GET /api/posts/{post_id}/comments
+POST /api/posts/{post_id}/comments
+PATCH /api/comments/{comment_id}
+DELETE /api/comments/{comment_id}
+
+=== THREADS ===
+GET /api/threads
+POST /api/threads
+PATCH /api/threads/{thread_id}
+DELETE /api/threads/{thread_id}
+GET /api/threads/{thread_id}
+GET /api/threads/{thread_id}/posts
+
+=== MASCOTS ===
+GET /api/mascots
+POST /api/mascots
+PATCH /api/mascots/{mascot_id}
+GET /api/mascots/{mascot_id}

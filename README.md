@@ -1,6 +1,13 @@
-API project for a blog.
+# Backend Blog project
 
-UML found at blog/BlogResourceFiles/uml/blog_UML.png
+Currently doing a big rewrite
+BlogResourceFiles/ is current, but the Spring Boot API is not
+Made text files for documentation and used AI to make them
+a .yaml file that follows OpenAPI specs and am using scalar
+to view the documentation
 
-AI generated create_and_populate.sql script to check the API endpoints on my browser
-blog/BlogResourceFiles/create_and_populate.sql
+```bash
+cd /BlogResourceFiles/Open_API_Docs
+python3 -m http.server 3000
+```
+to view the documents

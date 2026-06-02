@@ -1,0 +1,155 @@
+======================================
+GET /api/mascots
+======================================
+
+Get all the mascots in the platform.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+[
+	{
+		"mascotId": 2,
+		"mascotName": "Capybara"
+	},
+	{
+		"mascotId": 3,
+		"mascotName": "Owl"
+	}
+]
+
+ERRORS:
+N/A
+
+======================================
+POST /api/mascots
+======================================
+
+Create a mascot in the platform. ADMIN-ONLY
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"mascotName": "Moose"
+}
+
+RESPONSE:
+201 Created
+{
+	"mascotId": 5,
+	"mascotName": "Moose"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "mascotName",
+			"message": "Mascot name is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to create mascots."
+}
+
+409 Conflict
+{
+	"code": "MASCOT_NAME_TAKEN",
+	"message": "Mascot name taken"
+}
+
+======================================
+PATCH /api/mascots/{mascot_id}
+======================================
+
+Rename a mascot in the platform. ADMIN-ONLY
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"mascotName": "Lion"
+}
+
+RESPONSE:
+200 OK
+{
+	"mascotId": 10,
+	"mascotName": "Lion"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "mascotName",
+			"message": "Mascot name is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to update mascots."
+}
+
+404 Not Found
+{
+	"code": "MASCOT_DOES_NOT_EXIST",
+	"message": "Mascot #{mascot_id} does not exist."
+}
+
+409 Conflict
+{
+	"code": "MASCOT_NAME_TAKEN",
+	"message": "Mascot name taken"
+}
+
+======================================
+GET /api/mascots/{mascot_id}
+======================================
+
+Get a specific mascot.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+{
+	"mascotId": 10,
+	"mascotName": "Lion"
+}
+
+ERRORS:
+404 Not Found
+{
+	"code": "MASCOT_DOES_NOT_EXIST",
+	"message": "Mascot #{mascot_id} does not exist."
+}

@@ -1,0 +1,1564 @@
+openapi: 3.1.0
+info:
+  title: Blog API
+  version: 1.0.0
+  description: API documentation for the Blog platform.
+servers:
+  - url: /api
+    description: Relative API base path
+security: []
+tags:
+  - name: Auth
+  - name: Users
+  - name: Me
+  - name: Posts
+  - name: Comments
+  - name: Threads
+  - name: Mascots
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      description: Start the user session and return a JWT if the user is valid.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              usernameOrEmail: andMarsh
+              password: password1234
+      responses:
+        "200":
+          description: Login successful.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                userId: 3
+                accessToken: hjh43j5h4k35h43kj5h3jrlk34
+                tokenType: Bearer
+                expiresIn: 1000
+                username: andMarsh
+                roles:
+                  - ROLE_USER
+                  - ROLE_ADMIN
+        "400":
+          description: Username or password missing.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: MISSING_USERNAME_OR_PASSWORD
+                message: Username or password missing
+        "401":
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: INVALID_USERNAME_OR_PASSWORD
+                message: Invalid username or password
+
+  /users:
+    post:
+      tags: [Users]
+      summary: Register a user
+      description: Register a new user with a unique username and email.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+            example:
+              username: andMarsh
+              email: and@marsh.com
+              password: password1234
+              mascotId: 2
+              bio: Bio example
+      responses:
+        "201":
+          description: User created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateUser"
+              example:
+                userId: 3
+                username: andMarsh
+                email: and@marsh.com
+                mascotId: 2
+                bio: Bio example
+        "400":
+          $ref: "#/components/responses/UserValidationFailure"
+        "404":
+          $ref: "#/components/responses/MascotDoesNotExistByBody"
+        "409":
+          description: Username or email is already in use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                usernameTaken:
+                  value:
+                    code: USERNAME_TAKEN
+                    message: Username taken
+                emailInUse:
+                  value:
+                    code: EMAIL_IN_USE
+                    message: Email already in use
+
+  /users/{user_id}:
+    get:
+      tags: [Users]
+      summary: Get public user profile
+      description: Get public details for a user. Protected information is hidden.
+      operationId: getUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicUser"
+              example:
+                userId: 3
+                username: andMarsh
+                mascotId: 2
+                bio: Bio example
+        "404":
+          $ref: "#/components/responses/UserDoesNotExist"
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      description: Delete any user. Requires sufficient authorization.
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "204":
+          description: User deleted.
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: Logged-in user does not have sufficient authorization.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Logged in user does not have sufficient authorization to delete account #{user_id}
+        "404":
+          $ref: "#/components/responses/UserDoesNotExist"
+
+  /users/me:
+    get:
+      tags: [Me]
+      summary: Get my account
+      description: Get the logged-in user's account details.
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateUser"
+              example:
+                userId: 3
+                username: andMarsh
+                email: and@marsh.com
+                mascotId: 2
+                bio: Bio example
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+    patch:
+      tags: [Me]
+      summary: Update my profile
+      description: Update the logged-in user's profile details.
+      operationId: updateCurrentUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+            example:
+              username: andMarsh
+              email: and@marsh.com
+              mascotId: 2
+              bio: Bio example
+      responses:
+        "200":
+          description: Profile updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateUser"
+              example:
+                userId: 3
+                username: andMarsh
+                email: and@marsh.com
+                mascotId: 2
+                bio: Bio example
+        "400":
+          $ref: "#/components/responses/ProfileValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "404":
+          $ref: "#/components/responses/MascotDoesNotExistByBody"
+        "409":
+          description: Username or email is already in use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                usernameTaken:
+                  value:
+                    code: USERNAME_TAKEN
+                    message: Username taken
+                emailInUse:
+                  value:
+                    code: EMAIL_IN_USE
+                    message: Email already in use
+    delete:
+      tags: [Me]
+      summary: Delete my account
+      operationId: deleteCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Account deleted.
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+
+  /users/me/password:
+    patch:
+      tags: [Me]
+      summary: Update my password
+      operationId: updateCurrentUserPassword
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePasswordRequest"
+            example:
+              oldPassword: password1234
+              newPassword: cheetos1234
+      responses:
+        "204":
+          description: Password updated.
+        "400":
+          description: Password validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              example:
+                code: VALIDATION_FAILURE
+                message: Validation failed
+                fields:
+                  - field: oldPassword
+                    message: Old password is required
+                  - field: newPassword
+                    message: New password is required
+        "401":
+          description: Not logged in or old password is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                notLoggedIn:
+                  value:
+                    code: NOT_LOGGED_IN
+                    message: Not logged in.
+                invalidOldPassword:
+                  value:
+                    code: INVALID_OLD_PASSWORD
+                    message: Old password is incorrect.
+        "409":
+          description: New password matches the old password.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: OLD_PASSWORD_REUSED
+                message: New password must be different from the old password
+
+  /users/me/posts:
+    get:
+      tags: [Me, Posts]
+      summary: Get my posts
+      description: Get the logged-in user's posts as excerpts.
+      operationId: getCurrentUserPosts
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          $ref: "#/components/responses/PostExcerptList"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+
+  /posts:
+    get:
+      tags: [Posts]
+      summary: List posts
+      description: Get all posts in the platform as excerpts.
+      operationId: listPosts
+      responses:
+        "200":
+          $ref: "#/components/responses/PostExcerptList"
+    post:
+      tags: [Posts]
+      summary: Create a post
+      description: Create a post as the logged-in user.
+      operationId: createPost
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+            example:
+              postTitle: How to Swim
+              threadId: 3
+              postBody: Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.
+      responses:
+        "201":
+          description: Post created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+              example:
+                authorId: 2
+                authorName: andMarsh
+                postId: 4
+                postTitle: How to Swim
+                postBody: Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.
+                slug: how-to-swim
+                threadId: 3
+                threadName: Swimming
+                createdAt: "2026-05-01T23:24:00Z"
+                lastUpdatedAt: "2026-05-01T23:24:00Z"
+                publishedAt: "2026-05-01T23:24:00Z"
+                status: PUBLISHED
+        "400":
+          $ref: "#/components/responses/PostValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "404":
+          $ref: "#/components/responses/ThreadDoesNotExistByBody"
+        "409":
+          $ref: "#/components/responses/PostTitleTaken"
+
+  /posts/{post_id}:
+    get:
+      tags: [Posts]
+      summary: Get post
+      description: Get a post's full details.
+      operationId: getPost
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: Post details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+              example:
+                authorId: 2
+                authorName: andMarsh
+                postId: 4
+                postTitle: How to Swim
+                postBody: Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.
+                slug: how-to-swim
+                threadId: 3
+                threadName: Swimming
+                createdAt: "2026-05-01T23:24:00Z"
+                lastUpdatedAt: "2026-05-01T23:24:00Z"
+                publishedAt: "2026-05-01T23:24:00Z"
+                status: PUBLISHED
+        "404":
+          $ref: "#/components/responses/PostDoesNotExist"
+    patch:
+      tags: [Posts]
+      summary: Update post
+      description: Update a post as the logged-in user.
+      operationId: updatePost
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+            example:
+              postTitle: How to Swim
+              threadId: 8
+              postBody: Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.
+      responses:
+        "200":
+          description: Post updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+              example:
+                authorId: 2
+                authorName: andMarsh
+                postId: 4
+                postTitle: How to Swim
+                postBody: Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.
+                slug: how-to-swim
+                threadId: 8
+                threadName: Not Just Gaming
+                createdAt: "2026-05-01T23:24:00Z"
+                lastUpdatedAt: "2026-05-01T23:24:00Z"
+                publishedAt: "2026-05-01T23:24:00Z"
+                status: PUBLISHED
+        "400":
+          $ref: "#/components/responses/PostValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot update another user's post.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to update other users' posts.
+        "404":
+          description: Post or thread does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                postDoesNotExist:
+                  value:
+                    code: POST_DOES_NOT_EXIST
+                    message: Post #{post_id} does not exist.
+                threadDoesNotExist:
+                  value:
+                    code: THREAD_DOES_NOT_EXIST
+                    message: Thread #{threadId} does not exist.
+        "409":
+          $ref: "#/components/responses/PostTitleTaken"
+    delete:
+      tags: [Posts]
+      summary: Delete post
+      description: Delete a post as the logged-in user.
+      operationId: deletePost
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "204":
+          description: Post deleted.
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot delete another user's post.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to delete other users' posts.
+        "404":
+          $ref: "#/components/responses/PostDoesNotExist"
+
+  /users/{user_id}/posts:
+    get:
+      tags: [Users, Posts]
+      summary: Get user posts
+      description: Get a user's posts as excerpts.
+      operationId: getUserPosts
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          $ref: "#/components/responses/PostExcerptList"
+        "404":
+          $ref: "#/components/responses/UserDoesNotExist"
+
+  /posts/{post_id}/comments:
+    get:
+      tags: [Comments]
+      summary: List post comments
+      description: Get all comments for a post. Top-level comments have a null parentId; replies reference another comment through parentId.
+      operationId: listPostComments
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: Comments for the post.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+              example:
+                - authorId: 2
+                  authorName: andMarsh
+                  postId: 4
+                  postTitle: How to Swim
+                  commentId: 8
+                  commentBody: Such an insightful article
+                  parentId: null
+                  createdAt: "2026-05-01T23:24:00Z"
+                  lastUpdatedAt: "2026-05-01T23:24:00Z"
+        "404":
+          $ref: "#/components/responses/PostDoesNotExist"
+    post:
+      tags: [Comments]
+      summary: Create comment
+      description: Create a comment for a post. To create a top-level comment set parentId to null; replies must provide the parent comment ID.
+      operationId: createComment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+            example:
+              parentId: 3
+              commentBody: Such an insightful article
+      responses:
+        "201":
+          description: Comment created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+              example:
+                authorId: 2
+                authorName: andMarsh
+                postId: 4
+                postTitle: How to Swim
+                commentId: 8
+                commentBody: Such an insightful article
+                parentId: 3
+                createdAt: "2026-05-01T23:24:00Z"
+                lastUpdatedAt: "2026-05-01T23:24:00Z"
+        "400":
+          description: Validation failed or parent comment belongs to another post.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ValidationError"
+                  - $ref: "#/components/schemas/Error"
+              examples:
+                validationFailure:
+                  value:
+                    code: VALIDATION_FAILURE
+                    message: Validation failed
+                    fields:
+                      - field: commentBody
+                        message: Comment body is required
+                parentCommentNotInPost:
+                  value:
+                    code: PARENT_COMMENT_NOT_IN_POST
+                    message: Parent comment #{parentId} does not belong to Post #{post_id}
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "404":
+          description: Parent comment or post does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                parentCommentDoesNotExist:
+                  value:
+                    code: PARENT_COMMENT_DOES_NOT_EXIST
+                    message: Parent comment #{parentId} does not exist.
+                postDoesNotExist:
+                  value:
+                    code: POST_DOES_NOT_EXIST
+                    message: Post #{post_id} does not exist.
+
+  /comments/{comment_id}:
+    patch:
+      tags: [Comments]
+      summary: Update comment
+      description: Update a comment of the logged-in user.
+      operationId: updateComment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CommentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommentRequest"
+            example:
+              commentBody: Such a very insightful article. It was very well written
+      responses:
+        "200":
+          description: Comment updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+              example:
+                authorId: 2
+                authorName: andMarsh
+                postId: 4
+                postTitle: How to Swim
+                commentId: 8
+                commentBody: Such a very insightful article. It was very well written
+                parentId: 3
+                createdAt: "2026-05-01T23:24:00Z"
+                lastUpdatedAt: "2026-05-01T23:24:00Z"
+        "400":
+          description: Comment body validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              example:
+                code: VALIDATION_FAILURE
+                message: Validation failed
+                fields:
+                  - field: commentBody
+                    message: Comment body is required
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot update another user's comment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: You may not update other users' comments.
+        "404":
+          $ref: "#/components/responses/CommentDoesNotExist"
+        "409":
+          description: Comment body is unchanged.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: COMMENT_BODY_UNCHANGED
+                message: The comment body must not be equal to the previous comment body.
+    delete:
+      tags: [Comments]
+      summary: Delete comment
+      description: Delete a comment of the logged-in user.
+      operationId: deleteComment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CommentId"
+      responses:
+        "204":
+          description: Comment deleted.
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot delete another user's comment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: You may not delete other users' comments.
+        "404":
+          $ref: "#/components/responses/CommentDoesNotExist"
+
+  /threads:
+    get:
+      tags: [Threads]
+      summary: List threads
+      description: Get all threads in the platform.
+      operationId: listThreads
+      responses:
+        "200":
+          description: Threads.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Thread"
+              example:
+                - threadId: 2
+                  threadName: Coding
+                  postCount: 67
+                - threadId: 3
+                  threadName: Swimming
+                  postCount: 67
+    post:
+      tags: [Threads]
+      summary: Create thread
+      description: Create a thread in the platform. Admin-only.
+      operationId: createThread
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThreadRequest"
+            example:
+              threadName: Gaming
+      responses:
+        "201":
+          description: Thread created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thread"
+              example:
+                threadId: 5
+                threadName: Gaming
+                postCount: 0
+        "400":
+          $ref: "#/components/responses/ThreadValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot create threads.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to create threads.
+
+  /threads/{thread_id}:
+    get:
+      tags: [Threads]
+      summary: Get thread
+      operationId: getThread
+      parameters:
+        - $ref: "#/components/parameters/ThreadId"
+      responses:
+        "200":
+          description: Thread details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thread"
+              example:
+                threadId: 5
+                threadName: Gaming
+                postCount: 0
+        "404":
+          $ref: "#/components/responses/ThreadDoesNotExist"
+    patch:
+      tags: [Threads]
+      summary: Rename thread
+      description: Rename a thread in the platform. Admin-only.
+      operationId: updateThread
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ThreadId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThreadRequest"
+            example:
+              threadName: Not Just Gaming
+      responses:
+        "200":
+          description: Thread updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Thread"
+              example:
+                threadId: 8
+                threadName: Not Just Gaming
+                postCount: 0
+        "400":
+          $ref: "#/components/responses/ThreadValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot update threads.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to update threads.
+        "404":
+          $ref: "#/components/responses/ThreadDoesNotExist"
+    delete:
+      tags: [Threads]
+      summary: Delete thread
+      description: Delete a thread in the platform. Comments and posts are also deleted through thread deletion. Admin-only.
+      operationId: deleteThread
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ThreadId"
+      responses:
+        "204":
+          description: Thread deleted.
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot delete threads.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to delete threads.
+        "404":
+          $ref: "#/components/responses/ThreadDoesNotExist"
+
+  /threads/{thread_id}/posts:
+    get:
+      tags: [Threads, Posts]
+      summary: Get thread posts
+      description: Get all posts in a thread as excerpts.
+      operationId: getThreadPosts
+      parameters:
+        - $ref: "#/components/parameters/ThreadId"
+      responses:
+        "200":
+          $ref: "#/components/responses/PostExcerptList"
+        "404":
+          $ref: "#/components/responses/ThreadDoesNotExist"
+
+  /mascots:
+    get:
+      tags: [Mascots]
+      summary: List mascots
+      description: Get all mascots in the platform.
+      operationId: listMascots
+      responses:
+        "200":
+          description: Mascots.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mascot"
+              example:
+                - mascotId: 2
+                  mascotName: Capybara
+                - mascotId: 3
+                  mascotName: Owl
+    post:
+      tags: [Mascots]
+      summary: Create mascot
+      description: Create a mascot in the platform. Admin-only.
+      operationId: createMascot
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MascotRequest"
+            example:
+              mascotName: Moose
+      responses:
+        "201":
+          description: Mascot created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mascot"
+              example:
+                mascotId: 5
+                mascotName: Moose
+        "400":
+          $ref: "#/components/responses/MascotValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot create mascots.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to create mascots.
+        "409":
+          $ref: "#/components/responses/MascotNameTaken"
+
+  /mascots/{mascot_id}:
+    get:
+      tags: [Mascots]
+      summary: Get mascot
+      operationId: getMascot
+      parameters:
+        - $ref: "#/components/parameters/MascotId"
+      responses:
+        "200":
+          description: Mascot details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mascot"
+              example:
+                mascotId: 10
+                mascotName: Lion
+        "404":
+          $ref: "#/components/responses/MascotDoesNotExist"
+    patch:
+      tags: [Mascots]
+      summary: Rename mascot
+      description: Rename a mascot in the platform. Admin-only.
+      operationId: updateMascot
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/MascotId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MascotRequest"
+            example:
+              mascotName: Lion
+      responses:
+        "200":
+          description: Mascot updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mascot"
+              example:
+                mascotId: 10
+                mascotName: Lion
+        "400":
+          $ref: "#/components/responses/MascotValidationFailure"
+        "401":
+          $ref: "#/components/responses/NotLoggedIn"
+        "403":
+          description: User cannot update mascots.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: NOT_AUTHORIZED
+                message: Not authorized to update mascots.
+        "404":
+          $ref: "#/components/responses/MascotDoesNotExist"
+        "409":
+          $ref: "#/components/responses/MascotNameTaken"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      example: 3
+    PostId:
+      name: post_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      example: 4
+    CommentId:
+      name: comment_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      example: 8
+    ThreadId:
+      name: thread_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      example: 5
+    MascotId:
+      name: mascot_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+      example: 10
+
+  responses:
+    NotLoggedIn:
+      description: User is not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: NOT_LOGGED_IN
+            message: Not logged in.
+    UserDoesNotExist:
+      description: User does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: USER_DOES_NOT_EXIST
+            message: User #{user_id} does not exist.
+    MascotDoesNotExist:
+      description: Mascot does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: MASCOT_DOES_NOT_EXIST
+            message: Mascot #{mascot_id} does not exist.
+    MascotDoesNotExistByBody:
+      description: Mascot does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: MASCOT_DOES_NOT_EXIST
+            message: Mascot #{mascotId} does not exist.
+    ThreadDoesNotExist:
+      description: Thread does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: THREAD_DOES_NOT_EXIST
+            message: Thread #{thread_id} does not exist.
+    ThreadDoesNotExistByBody:
+      description: Thread does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: THREAD_DOES_NOT_EXIST
+            message: Thread #{threadId} does not exist.
+    PostDoesNotExist:
+      description: Post does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: POST_DOES_NOT_EXIST
+            message: Post #{post_id} does not exist.
+    CommentDoesNotExist:
+      description: Comment does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: COMMENT_DOES_NOT_EXIST
+            message: Comment #{comment_id} does not exist.
+    PostTitleTaken:
+      description: Post title is already taken by the same user.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: POST_TITLE_TAKEN
+            message: Post title already taken by the same user
+    MascotNameTaken:
+      description: Mascot name is already taken.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: MASCOT_NAME_TAKEN
+            message: Mascot name taken
+    PostExcerptList:
+      description: Post excerpts.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PostExcerpt"
+          example:
+            - authorId: 2
+              authorName: andMarsh
+              postId: 4
+              postTitle: How to Swim
+              postExcerpt: Lorem esse omnis neque veniam magnam Nobis iste error quaerat officia aliquid possimus Unde totam quia dolores cumque...
+              slug: how-to-swim
+              threadId: 3
+              threadName: Swimming
+              createdAt: "2026-05-01T23:24:00Z"
+              lastUpdatedAt: "2026-05-01T23:24:00Z"
+              publishedAt: "2026-05-01T23:24:00Z"
+              status: PUBLISHED
+    UserValidationFailure:
+      description: User validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+          example:
+            code: VALIDATION_FAILURE
+            message: Validation failed
+            fields:
+              - field: username
+                message: Username is required
+              - field: email
+                message: Email is required
+              - field: password
+                message: Password is required
+              - field: mascotId
+                message: Mascot Id is required
+              - field: bio
+                message: Bio is required
+    ProfileValidationFailure:
+      description: Profile validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+          example:
+            code: VALIDATION_FAILURE
+            message: Validation failed
+            fields:
+              - field: username
+                message: Username is required
+              - field: email
+                message: Email is required
+              - field: mascotId
+                message: Mascot Id is required
+              - field: bio
+                message: Bio is required
+    PostValidationFailure:
+      description: Post validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+          example:
+            code: VALIDATION_FAILURE
+            message: Validation failed
+            fields:
+              - field: postTitle
+                message: Post title is required
+              - field: threadId
+                message: Thread is required
+              - field: postBody
+                message: Post body is required
+    ThreadValidationFailure:
+      description: Thread validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+          example:
+            code: VALIDATION_FAILURE
+            message: Validation failed
+            fields:
+              - field: threadName
+                message: Thread name is required
+    MascotValidationFailure:
+      description: Mascot validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+          example:
+            code: VALIDATION_FAILURE
+            message: Validation failed
+            fields:
+              - field: mascotName
+                message: Mascot name is required
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ValidationError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - type: object
+          required: [fields]
+          properties:
+            fields:
+              type: array
+              items:
+                $ref: "#/components/schemas/ValidationFieldError"
+    ValidationFieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+    LoginRequest:
+      type: object
+      required: [usernameOrEmail, password]
+      properties:
+        usernameOrEmail:
+          type: string
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      required: [userId, accessToken, tokenType, expiresIn, username, roles]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+        username:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [ROLE_USER, ROLE_ADMIN]
+    CreateUserRequest:
+      type: object
+      required: [username, email, password, mascotId, bio]
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        mascotId:
+          type: integer
+          format: int64
+        bio:
+          type: string
+    UpdateUserRequest:
+      type: object
+      required: [username, email, mascotId, bio]
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        mascotId:
+          type: integer
+          format: int64
+        bio:
+          type: string
+    PublicUser:
+      type: object
+      required: [userId, username, mascotId, bio]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        username:
+          type: string
+        mascotId:
+          type: integer
+          format: int64
+        bio:
+          type: string
+    PrivateUser:
+      allOf:
+        - $ref: "#/components/schemas/PublicUser"
+        - type: object
+          required: [email]
+          properties:
+            email:
+              type: string
+              format: email
+    UpdatePasswordRequest:
+      type: object
+      required: [oldPassword, newPassword]
+      properties:
+        oldPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+    PostStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, ARCHIVED]
+    PostRequest:
+      type: object
+      required: [postTitle, threadId, postBody]
+      properties:
+        postTitle:
+          type: string
+        threadId:
+          type: integer
+          format: int64
+        postBody:
+          type: string
+    PostExcerpt:
+      type: object
+      required:
+        - authorId
+        - authorName
+        - postId
+        - postTitle
+        - postExcerpt
+        - slug
+        - threadId
+        - threadName
+        - createdAt
+        - lastUpdatedAt
+        - publishedAt
+        - status
+      properties:
+        authorId:
+          type: integer
+          format: int64
+        authorName:
+          type: string
+        postId:
+          type: integer
+          format: int64
+        postTitle:
+          type: string
+        postExcerpt:
+          type: string
+        slug:
+          type: string
+        threadId:
+          type: integer
+          format: int64
+        threadName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        lastUpdatedAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/PostStatus"
+    Post:
+      allOf:
+        - type: object
+          required:
+            - authorId
+            - authorName
+            - postId
+            - postTitle
+            - postBody
+            - slug
+            - threadId
+            - threadName
+            - createdAt
+            - lastUpdatedAt
+            - publishedAt
+            - status
+          properties:
+            authorId:
+              type: integer
+              format: int64
+            authorName:
+              type: string
+            postId:
+              type: integer
+              format: int64
+            postTitle:
+              type: string
+            postBody:
+              type: string
+            slug:
+              type: string
+            threadId:
+              type: integer
+              format: int64
+            threadName:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            lastUpdatedAt:
+              type: string
+              format: date-time
+            publishedAt:
+              type: string
+              format: date-time
+            status:
+              $ref: "#/components/schemas/PostStatus"
+    CommentRequest:
+      type: object
+      required: [commentBody]
+      properties:
+        parentId:
+          type:
+            - integer
+            - "null"
+          format: int64
+        commentBody:
+          type: string
+    UpdateCommentRequest:
+      type: object
+      required: [commentBody]
+      properties:
+        commentBody:
+          type: string
+    Comment:
+      type: object
+      required:
+        - authorId
+        - authorName
+        - postId
+        - postTitle
+        - commentId
+        - commentBody
+        - parentId
+        - createdAt
+        - lastUpdatedAt
+      properties:
+        authorId:
+          type: integer
+          format: int64
+        authorName:
+          type: string
+        postId:
+          type: integer
+          format: int64
+        postTitle:
+          type: string
+        commentId:
+          type: integer
+          format: int64
+        commentBody:
+          type: string
+        parentId:
+          type:
+            - integer
+            - "null"
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        lastUpdatedAt:
+          type: string
+          format: date-time
+    ThreadRequest:
+      type: object
+      required: [threadName]
+      properties:
+        threadName:
+          type: string
+    Thread:
+      type: object
+      required: [threadId, threadName, postCount]
+      properties:
+        threadId:
+          type: integer
+          format: int64
+        threadName:
+          type: string
+        postCount:
+          type: integer
+    MascotRequest:
+      type: object
+      required: [mascotName]
+      properties:
+        mascotName:
+          type: string
+    Mascot:
+      type: object
+      required: [mascotId, mascotName]
+      properties:
+        mascotId:
+          type: integer
+          format: int64
+        mascotName:
+          type: string

@@ -1,0 +1,287 @@
+======================================
+GET /api/posts
+======================================
+
+Get all the posts in the platform. Only
+sends post excerpts.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+[
+	{
+		"authorId": 2,
+		"authorName": "andMarsh",
+		"postId": 4,
+		"postTitle": "How to Swim",
+		"postExcerpt": "Lorem esse omnis neque veniam magnam Nobis iste error quaerat officia aliquid possimus Unde totam quia dolores cumque...",
+		"slug": "how-to-swim",
+		"threadId": 3,
+		"threadName": "Swimming",
+		"createdAt": "2026-05-01T23:24:00Z",
+		"lastUpdatedAt": "2026-05-01T23:24:00Z",
+		"publishedAt": "2026-05-01T23:24:00Z",
+		"status": "PUBLISHED"
+	}
+]
+
+ERRORS:
+N/A
+
+======================================
+POST /api/posts
+======================================
+
+Create a post as the logged-in user
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"postTitle": "How to Swim",
+	"threadId": 3,
+	"postBody": "Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut."
+}
+
+RESPONSE:
+201 Created
+{
+	"authorId": 2,
+	"authorName": "andMarsh",
+	"postId": 4,
+	"postTitle": "How to Swim",
+	"postBody": "Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.",
+	"slug": "how-to-swim",
+	"threadId": 3,
+	"threadName": "Swimming",
+	"createdAt": "2026-05-01T23:24:00Z",
+	"lastUpdatedAt": "2026-05-01T23:24:00Z",
+	"publishedAt": "2026-05-01T23:24:00Z",
+	"status": "PUBLISHED"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "postTitle",
+			"message": "Post title is required"
+		},
+		{
+			"field": "threadId",
+			"message": "Thread is required"
+		},
+		{
+			"field": "postBody",
+			"message": "Post body is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+404 Not Found
+{
+	"code": "THREAD_DOES_NOT_EXIST",
+	"message": "Thread #{threadId} does not exist."
+}
+
+409 Conflict
+{
+	"code": "POST_TITLE_TAKEN",
+	"message": "Post title already taken by the same user"
+}
+
+======================================
+GET /api/posts/{post_id}
+======================================
+
+Get a post's full details.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+{
+	"authorId": 2,
+	"authorName": "andMarsh",
+	"postId": 4,
+	"postTitle": "How to Swim",
+	"postBody": "Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.",
+	"slug": "how-to-swim",
+	"threadId": 3,
+	"threadName": "Swimming",
+	"createdAt": "2026-05-01T23:24:00Z",
+	"lastUpdatedAt": "2026-05-01T23:24:00Z",
+	"publishedAt": "2026-05-01T23:24:00Z",
+	"status": "PUBLISHED"
+}
+
+ERRORS:
+404 Not Found
+{
+	"code": "POST_DOES_NOT_EXIST",
+	"message": "Post #{post_id} does not exist."
+}
+
+======================================
+GET /api/users/{user_id}/posts
+======================================
+
+Get User #{user_id}'s posts. Only
+sends an excerpt of the posts because
+the full post will be shown with
+the GET /api/posts/{post_id} endpoint.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+[
+	{
+		"authorId": 2,
+		"authorName": "andMarsh",
+		"postId": 4,
+		"postTitle": "How to Swim",
+		"postExcerpt": "Lorem esse omnis neque veniam magnam Nobis iste error quaerat officia aliquid possimus Unde totam quia dolores cumque...",
+		"slug": "how-to-swim",
+		"threadId": 3,
+		"threadName": "Swimming",
+		"createdAt": "2026-05-01T23:24:00Z",
+		"lastUpdatedAt": "2026-05-01T23:24:00Z",
+		"publishedAt": "2026-05-01T23:24:00Z",
+		"status": "PUBLISHED"
+	}
+]
+
+ERRORS:
+404 Not Found
+{
+	"code": "USER_DOES_NOT_EXIST",
+	"message": "User #{user_id} does not exist."
+}
+
+======================================
+PATCH /api/posts/{post_id}
+======================================
+
+Update a post as the logged-in user
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"postTitle": "How to Swim",
+	"threadId": 8,
+	"postBody": "Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut."
+}
+
+RESPONSE:
+200 OK
+{
+	"authorId": 2,
+	"authorName": "andMarsh",
+	"postId": 4,
+	"postTitle": "How to Swim",
+	"postBody": "Sit doloremque sapiente odio voluptatum totam. Alias aperiam culpa maiores amet atque voluptatum, nisi! Maxime soluta molestias voluptas quo similique. Nostrum quae enim asperiores eveniet sapiente eos? Atque iusto aut.",
+	"slug": "how-to-swim",
+	"threadId": 8,
+	"threadName": "Not Just Gaming",
+	"createdAt": "2026-05-01T23:24:00Z",
+	"lastUpdatedAt": "2026-05-01T23:24:00Z",
+	"publishedAt": "2026-05-01T23:24:00Z",
+	"status": "PUBLISHED"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "postTitle",
+			"message": "Post title is required"
+		},
+		{
+			"field": "threadId",
+			"message": "Thread is required"
+		},
+		{
+			"field": "postBody",
+			"message": "Post body is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to update other users' posts."
+}
+
+404 Not Found
+{
+	"code": "POST_DOES_NOT_EXIST",
+	"message": "Post #{post_id} does not exist."
+}
+
+404 Not Found
+{
+	"code": "THREAD_DOES_NOT_EXIST",
+	"message": "Thread #{threadId} does not exist."
+}
+
+409 Conflict
+{
+	"code": "POST_TITLE_TAKEN",
+	"message": "Post title already taken by the same user"
+}
+
+======================================
+DELETE /api/posts/{post_id}
+======================================
+
+Delete a post as the logged-in user
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+204 No Content
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Not authorized to delete other users' posts."
+}
+
+404 Not Found
+{
+	"code": "POST_DOES_NOT_EXIST",
+	"message": "Post #{post_id} does not exist."
+}

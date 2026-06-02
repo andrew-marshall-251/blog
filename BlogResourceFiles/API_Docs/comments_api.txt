@@ -1,0 +1,198 @@
+======================================
+GET /api/posts/{post_id}/comments
+======================================
+
+Get all the comments for a given post.
+In the response parentId will be set to
+null if it is a top-level comment, otherwise,
+its parentId will indicate which comment
+the given comment is replying to.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+[
+	{
+		"authorId": 2,
+		"authorName": "andMarsh",
+		"postId": 4,
+		"postTitle": "How to Swim",
+		"commentId": 8,
+		"commentBody": "Such an insightful article",
+		"parentId": null,
+		"createdAt": "2026-05-01T23:24:00Z",
+		"lastUpdatedAt": "2026-05-01T23:24:00Z"
+	}
+]
+
+ERRORS:
+404 Not Found
+{
+	"code": "POST_DOES_NOT_EXIST",
+	"message": "Post #{post_id} does not exist."
+}
+
+======================================
+POST /api/posts/{post_id}/comments
+======================================
+
+Create a comment for a given post. To
+create a top-level comment set parentId
+to null, otherwise put the parentId of
+the comment that you are replying to.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"parentId": 3,
+	"commentBody": "Such an insightful article"
+}
+
+RESPONSE:
+201 Created
+{
+	"authorId": 2,
+	"authorName": "andMarsh",
+	"postId": 4,
+	"postTitle": "How to Swim",
+	"commentId": 8,
+	"commentBody": "Such an insightful article",
+	"parentId": 3,
+	"createdAt": "2026-05-01T23:24:00Z",
+	"lastUpdatedAt": "2026-05-01T23:24:00Z"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "commentBody",
+			"message": "Comment body is required"
+		}
+	]
+}
+
+400 Bad Request
+{
+	"code": "PARENT_COMMENT_NOT_IN_POST",
+	"message": "Parent comment #{parentId} does not belong to Post #{post_id}"
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+404 Not Found
+{
+	"code": "PARENT_COMMENT_DOES_NOT_EXIST",
+	"message": "Parent comment #{parentId} does not exist."
+}
+
+404 Not Found
+{
+	"code": "POST_DOES_NOT_EXIST",
+	"message": "Post #{post_id} does not exist."
+}
+
+======================================
+PATCH /api/comments/{comment_id}
+======================================
+
+Update a comment of the logged-in user.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"commentBody": "Such a very insightful article. It was very well written"
+}
+
+RESPONSE:
+200 OK
+{
+	"authorId": 2,
+	"authorName": "andMarsh",
+	"postId": 4,
+	"postTitle": "How to Swim",
+	"commentId": 8,
+	"commentBody": "Such a very insightful article. It was very well written",
+	"parentId": 3,
+	"createdAt": "2026-05-01T23:24:00Z",
+	"lastUpdatedAt": "2026-05-01T23:24:00Z"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "commentBody",
+			"message": "Comment body is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "You may not update other users' comments."
+}
+
+404 Not Found
+{
+	"code": "COMMENT_DOES_NOT_EXIST",
+	"message": "Comment #{comment_id} does not exist."
+}
+
+409 Conflict
+{
+	"code": "COMMENT_BODY_UNCHANGED",
+	"message": "The comment body must not be equal to the previous comment body."
+}
+
+======================================
+DELETE /api/comments/{comment_id}
+======================================
+
+Delete a comment of the logged-in user.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+204 No Content
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "You may not delete other users' comments."
+}
+
+404 Not Found
+{
+	"code": "COMMENT_DOES_NOT_EXIST",
+	"message": "Comment #{comment_id} does not exist."
+}

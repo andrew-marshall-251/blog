@@ -1,0 +1,193 @@
+======================================
+POST /api/auth/login
+======================================
+
+Start the user session and return JWT
+if the user is valid, otherwise return
+an error message.
+
+REQUEST:
+Content-Type: application/json
+{
+	"usernameOrEmail": "andMarsh",
+	"password": "password1234"
+}
+
+RESPONSE:
+200 OK
+{
+	"userId": 3,
+	"accessToken": "hjh43j5h4k35h43kj5h3jrlk34",
+	"tokenType": "Bearer",
+	"expiresIn": 1000,
+	"username": "andMarsh",
+	"roles": [
+		"ROLE_USER",
+		"ROLE_ADMIN"
+	]
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "MISSING_USERNAME_OR_PASSWORD",
+	"message": "Username or password missing"
+}
+
+401 Unauthorized
+{
+	"code": "INVALID_USERNAME_OR_PASSWORD",
+	"message": "Invalid username or password"
+}
+
+======================================
+POST /api/users
+======================================
+
+Register a new user, must have unique
+username and email.
+ 
+REQUEST:
+Content-Type: application/json
+{
+	"username": "andMarsh",
+	"email": "and@marsh.com",
+	"password": "password1234",
+	"mascotId": 2,
+	"bio": "Bio example"
+}
+
+RESPONSE:
+201 Created
+{
+	"userId": 3,
+	"username": "andMarsh",
+	"email": "and@marsh.com",
+	"mascotId": 2,
+	"bio": "Bio example"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "username",
+			"message": "Username is required"
+		},
+		{
+			"field": "email",
+			"message": "Email is required"
+		},
+		{
+			"field": "password",
+			"message": "Password is required"
+		},
+		{
+			"field": "mascotId",
+			"message": "Mascot Id is required"
+		},
+		{
+			"field": "bio",
+			"message": "Bio is required"
+		}
+	]
+}
+
+404 Not Found
+{
+	"code": "MASCOT_DOES_NOT_EXIST",
+	"message": "Mascot #{mascotId} does not exist."
+}
+
+409 Conflict
+{
+	"code": "USERNAME_TAKEN",
+	"message": "Username taken"
+}
+
+409 Conflict
+{
+	"code": "EMAIL_IN_USE",
+	"message": "Email already in use"
+}
+
+======================================
+GET /api/users/{user_id}
+======================================
+
+Get user of user_id {user_id}'s details.
+Used to display user profiles publicly.
+Protected info hidden.
+
+REQUEST:
+empty body
+
+RESPONSE:
+200 OK
+{
+	"userId": 3,
+	"username": "andMarsh",
+	"mascotId": 2,
+	"bio": "Bio example"
+}
+
+ERRORS:
+404 Not Found
+{
+	"code": "USER_DOES_NOT_EXIST",
+	"message": "User #{user_id} does not exist."
+}
+
+======================================
+DELETE /api/users/me
+======================================
+
+Delete your account.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+204 No Content
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+======================================
+DELETE /api/users/{user_id}
+======================================
+
+Delete any user, must have sufficient
+authorization.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+204 No Content
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+403 Forbidden
+{
+	"code": "NOT_AUTHORIZED",
+	"message": "Logged in user does not have sufficient authorization to delete account #{user_id}"
+}
+
+404 Not Found
+{
+	"code": "USER_DOES_NOT_EXIST",
+	"message": "User #{user_id} does not exist."
+}

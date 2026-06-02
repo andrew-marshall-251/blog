@@ -1,0 +1,190 @@
+======================================
+GET /api/users/me
+======================================
+
+Get the logged-in user's account details.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+200 OK
+{
+	"userId": 3,
+	"username": "andMarsh",
+	"email": "and@marsh.com",
+	"mascotId": 2,
+	"bio": "Bio example"
+}
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+======================================
+PATCH /api/users/me
+======================================
+
+Update your profile details.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"username": "andMarsh",
+	"email": "and@marsh.com",
+	"mascotId": 2,
+	"bio": "Bio example"
+}
+
+RESPONSE:
+200 OK
+{
+	"userId": 3,
+	"username": "andMarsh",
+	"email": "and@marsh.com",
+	"mascotId": 2,
+	"bio": "Bio example"
+}
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "username",
+			"message": "Username is required"
+		},
+		{
+			"field": "email",
+			"message": "Email is required"
+		},
+		{
+			"field": "mascotId",
+			"message": "Mascot Id is required"
+		},
+		{
+			"field": "bio",
+			"message": "Bio is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+404 Not Found
+{
+	"code": "MASCOT_DOES_NOT_EXIST",
+	"message": "Mascot #{mascotId} does not exist."
+}
+
+409 Conflict
+{
+	"code": "USERNAME_TAKEN",
+	"message": "Username taken"
+}
+
+409 Conflict
+{
+	"code": "EMAIL_IN_USE",
+	"message": "Email already in use"
+}
+
+======================================
+PATCH /api/users/me/password
+======================================
+
+Update your password.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+Content-Type: application/json
+{
+	"oldPassword": "password1234",
+	"newPassword": "cheetos1234"
+}
+
+RESPONSE:
+204 No Content
+
+ERRORS:
+400 Bad Request
+{
+	"code": "VALIDATION_FAILURE",
+	"message": "Validation failed",
+	"fields": [
+		{
+			"field": "oldPassword",
+			"message": "Old password is required"
+		},
+		{
+			"field": "newPassword",
+			"message": "New password is required"
+		}
+	]
+}
+
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
+
+401 Unauthorized
+{
+	"code": "INVALID_OLD_PASSWORD",
+	"message": "Old password is incorrect."
+}
+
+409 Conflict
+{
+	"code": "OLD_PASSWORD_REUSED",
+	"message": "New password must be different from the old password"
+}
+
+======================================
+GET /api/users/me/posts
+======================================
+
+Get the logged in user's posts. Only
+sends an excerpt of the posts because
+the full post will be shown with
+the GET /api/posts/{post_id} endpoint.
+
+REQUEST:
+Authorization: Bearer kljfdhsajkgdjsafd
+
+RESPONSE:
+200 OK
+[
+	{
+		"authorId": 2,
+		"authorName": "andMarsh",
+		"postId": 4,
+		"postTitle": "How to Swim",
+		"postExcerpt": "Lorem esse omnis neque veniam magnam Nobis iste error quaerat officia aliquid possimus Unde totam quia dolores cumque...",
+		"slug": "how-to-swim",
+		"threadId": 3,
+		"threadName": "Swimming",
+		"createdAt": "2026-05-01T23:24:00Z",
+		"lastUpdatedAt": "2026-05-01T23:24:00Z",
+		"publishedAt": "2026-05-01T23:24:00Z",
+		"status": "PUBLISHED"
+	}
+]
+
+ERRORS:
+401 Unauthorized
+{
+	"code": "NOT_LOGGED_IN",
+	"message": "Not logged in."
+}
